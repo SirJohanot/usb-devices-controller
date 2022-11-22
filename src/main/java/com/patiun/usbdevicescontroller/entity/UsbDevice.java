@@ -1,42 +1,93 @@
 package com.patiun.usbdevicescontroller.entity;
 
-import java.util.Objects;
-
 public class UsbDevice {
 
-    private final String name;
+    private final byte classValue;
+    private final int busNumber;
+    private final int address;
+    private final short vendor;
+    private final short product;
 
-    public UsbDevice(String name) {
-        this.name = name;
+    public UsbDevice(byte classValue, int busNumber, int address, short vendor, short product) {
+        this.classValue = classValue;
+        this.busNumber = busNumber;
+        this.address = address;
+        this.vendor = vendor;
+        this.product = product;
     }
 
-    public String getName() {
-        return name;
+    public byte getClassValue() {
+        return classValue;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public int getBusNumber() {
+        return busNumber;
+    }
+
+    public int getAddress() {
+        return address;
+    }
+
+    public short getVendor() {
+        return vendor;
+    }
+
+    public short getProduct() {
+        return product;
+    }
+
+    private static String deviceClassNumberToName(byte classNumber) {
+        switch (classNumber) {
+            case 0x01:
+                return "Audio";
+            case 0x02:
+                return "Communications and CDC Control";
+            case 0x03:
+                return "HID (Human Interface Device)";
+            case 0x05:
+                return "Physical";
+            case 0x06:
+                return "Image";
+            case 0x07:
+                return "Printer";
+            case 0x08:
+                return "Mass Storage";
+            case 0x09:
+                return "Hub";
+            case 0x0A:
+                return "CDC-Data";
+            case 0x0B:
+                return "Smart Card";
+            case 0x0D:
+                return "Content Security";
+            case 0x0E:
+                return "Video";
+            case 0x0F:
+                return "Personal Healthcare";
+            case 0x10:
+                return "Audio/Video Devices";
+            case 0x11:
+                return "Billboard Device Class";
+            case 0x12:
+                return "USB Type-C Bridge Class";
+            case (byte) 0xDC:
+                return "Diagnostic Device";
+            case (byte) 0xE0:
+                return "Wireless Controller";
+            case (byte) 0xEF:
+                return "Miscellaneous";
+            case (byte) 0xFE:
+                return "Application Specific";
+            case (byte) 0xFF:
+                return "Vendor Specific";
+            default:
+                return String.format("Unknown %02X", classNumber);
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        UsbDevice usbDevice = (UsbDevice) o;
-
-        return Objects.equals(name, usbDevice.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return name != null ? name.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        return "UsbDevice{" +
-                "name='" + name + '\'' +
-                '}';
+        return String.format("%s (Bus %03d, Device %03d: Vendor %04x, Product %04x)",
+                deviceClassNumberToName(classValue), busNumber, address, vendor, product);
     }
 }

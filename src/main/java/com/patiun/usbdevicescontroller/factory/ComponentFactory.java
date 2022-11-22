@@ -1,6 +1,7 @@
 package com.patiun.usbdevicescontroller.factory;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
 
@@ -23,10 +24,26 @@ public class ComponentFactory {
         component.setOpaque(true);
     }
 
-    public static JButton buildButton(String name) {
-        JButton button = new JButton(name);
-        styleComponent(button);
-        return button;
+    public static JLabel buildLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setHorizontalTextPosition(SwingConstants.CENTER);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        styleComponent(label);
+        return label;
+    }
+
+    public static JScrollPane buildScrollPane(JComponent component) {
+        JScrollPane scrollPane = new JScrollPane(component);
+        styleComponent(scrollPane);
+        scrollPane.getVerticalScrollBar().setBackground(BACKGROUND_COLOR);
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = MAIN_COLOR;
+            }
+        });
+        return scrollPane;
     }
 
     public static JTextArea buildTextArea(boolean editable) {
@@ -41,13 +58,13 @@ public class ComponentFactory {
         return textArea;
     }
 
-    public static void setupFrame(JFrame frame, String title) {
+    public static void setUpFrame(JFrame frame, String title) {
         frame.setTitle(title);
         frame.getContentPane().setBackground(BACKGROUND_COLOR);
         frame.setUndecorated(false);
     }
 
-    public static void setupPanel(JPanel panel) {
+    public static void setUpPanel(JPanel panel) {
         styleComponent(panel);
     }
 
@@ -57,4 +74,19 @@ public class ComponentFactory {
         return spinner;
     }
 
+    public static JButton buildButton(String name) {
+        JButton button = new JButton(name);
+        styleComponent(button);
+        return button;
+    }
+
+    public static void setupFrame(JFrame frame, String title) {
+        frame.setTitle(title);
+        frame.getContentPane().setBackground(BACKGROUND_COLOR);
+        frame.setUndecorated(false);
+    }
+
+    public static void setupPanel(JPanel panel) {
+        styleComponent(panel);
+    }
 }
