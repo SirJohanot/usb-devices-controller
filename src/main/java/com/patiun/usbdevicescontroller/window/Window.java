@@ -1,6 +1,6 @@
 package com.patiun.usbdevicescontroller.window;
 
-import com.patiun.usbdevicescontroller.entity.UsbDevice;
+import com.patiun.usbdevicescontroller.entity.UsbDeviceInfo;
 import com.patiun.usbdevicescontroller.factory.ComponentFactory;
 import com.patiun.usbdevicescontroller.service.UsbService;
 
@@ -17,7 +17,21 @@ public class Window {
     private final JPanel panel;
 
     private Thread updaterThread;
-    private List<UsbDevice> currentDevices = new ArrayList<>();
+    private List<UsbDeviceInfo> currentDevices = new ArrayList<>();
+
+    private final Runnable updaterRunnable = () -> {
+        while (true) {
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
+            updateDevicesList();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+    };
 
     public Window() {
         frame = buildFrame();
@@ -38,12 +52,17 @@ public class Window {
         return frame;
     }
 
-    private JButton buildEjectButton(UsbDevice device) {
-        JButton videoButton = buildButton("Safely eject");
+    private JButton buildEjectButton(UsbDeviceInfo device) {
+        JButton videoButton = buildButton("Disconnect");
         videoButton.addActionListener(e -> {
+            updaterThread.interrupt();
             try {
+                updaterThread.join();
                 UsbService.safelyEject(device);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
             } finally {
+                updaterThread = new Thread(updaterRunnable);
                 updaterThread.start();
             }
         });
@@ -51,24 +70,13 @@ public class Window {
     }
 
     public void launch() {
-        updaterThread = new Thread(() -> {
-            while (true) {
-                if (updaterThread.isInterrupted()) {
-                    return;
-                }
-                updateDevicesList();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-        });
+        updaterThread = new Thread(updaterRunnable);
         updaterThread.start();
     }
 
     private void updateDevicesList() {
-        List<UsbDevice> detectedDevices = UsbService.findAllDevices();
+        List<UsbDeviceInfo> detectedDevices = UsbService.findAllDevices();
+//        System.out.println("Comparing " + currentDevices + "\nand " + detectedDevices);
         if (currentDevices.equals(detectedDevices)) {
             return;
         }
@@ -83,14 +91,19 @@ public class Window {
             JPanel devicePanel = new JPanel(new BorderLayout());
             ComponentFactory.setupPanel(devicePanel);
 
-            JLabel deviceName = buildLabel(device.toString());
-            devicePanel.add(deviceName, BorderLayout.WEST);
+            String deviceName = device.toString();
+            JLabel deviceNameLabel = buildLabel(deviceName);
+            devicePanel.add(deviceNameLabel, BorderLayout.WEST);
 
-            JButton ejectButton = buildEjectButton(device);
-            devicePanel.add(ejectButton, BorderLayout.EAST);
+            byte deviceClass = device.getClassValue();
+            if (deviceClass == 0) {
+                JButton ejectButton = buildEjectButton(device);
+                devicePanel.add(ejectButton, BorderLayout.EAST);
+            }
 
             panel.add(devicePanel);
         });
+        
         panel.revalidate();
         panel.repaint();
         frame.pack();

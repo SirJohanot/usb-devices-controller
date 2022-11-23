@@ -6,3 +6,5 @@ build
 
 # Ignore IDEA settings
 .idea
+
+*.log

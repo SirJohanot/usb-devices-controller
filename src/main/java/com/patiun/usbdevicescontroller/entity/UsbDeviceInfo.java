@@ -1,6 +1,6 @@
 package com.patiun.usbdevicescontroller.entity;
 
-public class UsbDevice {
+public class UsbDeviceInfo {
 
     private final byte classValue;
     private final int busNumber;
@@ -8,7 +8,7 @@ public class UsbDevice {
     private final short vendor;
     private final short product;
 
-    public UsbDevice(byte classValue, int busNumber, int address, short vendor, short product) {
+    public UsbDeviceInfo(byte classValue, int busNumber, int address, short vendor, short product) {
         this.classValue = classValue;
         this.busNumber = busNumber;
         this.address = address;
@@ -83,6 +83,42 @@ public class UsbDevice {
             default:
                 return String.format("Unknown %02X", classNumber);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UsbDeviceInfo usbDeviceInfo = (UsbDeviceInfo) o;
+
+        if (classValue != usbDeviceInfo.classValue) {
+            return false;
+        }
+        if (busNumber != usbDeviceInfo.busNumber) {
+            return false;
+        }
+        if (address != usbDeviceInfo.address) {
+            return false;
+        }
+        if (vendor != usbDeviceInfo.vendor) {
+            return false;
+        }
+        return product == usbDeviceInfo.product;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = classValue;
+        result = 31 * result + busNumber;
+        result = 31 * result + address;
+        result = 31 * result + (int) vendor;
+        result = 31 * result + (int) product;
+        return result;
     }
 
     @Override
